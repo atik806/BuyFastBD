@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-
-=======
 # 🛍️ BuyFastBD - Modern E-Commerce Platform
 
 > A lightning-fast, feature-rich e-commerce platform built with React, Firebase, and modern web technologies. Designed for speed, conversion, and seamless user experience.
