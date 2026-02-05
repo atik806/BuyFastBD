@@ -43,6 +43,16 @@ service cloud.firestore {
     }
   }
 }
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow authenticated users to upload images
+    match /products/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
 ```
 
 ## Rule Breakdown

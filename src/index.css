@@ -528,31 +528,39 @@ body {
 .trust-section {
   max-width: 1200px;
   margin: 60px auto;
-  padding: 0 20px;
+  padding: 40px 20px;
 }
 
 .trust-section h2 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   text-align: center;
   margin-bottom: 40px;
-  color: #ff6b35;
+  color: #333;
+  font-weight: 600;
 }
 
 .trust-badges {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
 }
 
 .badge {
   background: white;
   padding: 20px;
-  border-radius: 12px;
+  border-radius: 8px;
   text-align: center;
-  font-weight: bold;
-  color: #ff6b35;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-size: 0.95rem;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s ease;
+}
+
+.badge:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
 /* Footer */
@@ -870,3 +878,68 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* User Profile */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-name {
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  animation: slideInRight 0.6s ease-out;
+}
+
+.logout-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: white;
+}
+
+.logout-btn:hover {
+  background: white;
+  color: #ff6b35;
+}
+
+/* Search Section */
+.search-section {
+  padding: 30px 20px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+  animation: fadeIn 0.6s ease-out;
+}
+
+@media (max-width: 768px) {
+  .nav-links {
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  .user-profile {
+    gap: 10px;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .user-name {
+    font-size: 0.85rem;
+  }
+
+  .logout-btn {
+    width: 100%;
+  }
+}
+
+
+.badge-icon {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.badge-icon:nth-child(1) { }
+.badge-icon:nth-child(2) { }
+.badge-icon:nth-child(3) { }
+.badge-icon:nth-child(4) { }

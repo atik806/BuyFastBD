@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore'
-import { db } from '../firebase'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { db, storage } from '../firebase'
 import '../styles/ProductManagement.css'
 
 export default function ProductManagement() {
@@ -10,13 +11,15 @@ export default function ProductManagement() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     price: '',
     stock: '',
     discount: '',
     description: '',
-    category: 'Electronics'
+    category: 'Gadgets',
+    imageUrl: ''
   })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -66,6 +69,39 @@ export default function ProductManagement() {
     }))
   }
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    try {
+      setUploadingImage(true)
+      setError('')
+
+      // Create a unique filename
+      const timestamp = Date.now()
+      const filename = `products/${timestamp}_${file.name}`
+      const storageRef = ref(storage, filename)
+
+      // Upload file
+      await uploadBytes(storageRef, file)
+
+      // Get download URL
+      const downloadURL = await getDownloadURL(storageRef)
+
+      // Update form data with image URL
+      setFormData(prev => ({
+        ...prev,
+        imageUrl: downloadURL
+      }))
+
+      setSuccess('✅ Image uploaded successfully!')
+    } catch (err) {
+      setError('Error uploading image: ' + err.message)
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -95,7 +131,7 @@ export default function ProductManagement() {
       }
 
       // Reset form (real-time listener will update automatically)
-      setFormData({ name: '', price: '', stock: '', discount: '', description: '', category: 'Electronics' })
+      setFormData({ name: '', price: '', stock: '', discount: '', description: '', category: 'Gadgets', imageUrl: '' })
       setEditingId(null)
       setShowForm(false)
     } catch (err) {
@@ -110,7 +146,8 @@ export default function ProductManagement() {
       stock: product.stock,
       discount: product.discount || '',
       description: product.description || '',
-      category: product.category || 'Electronics'
+      category: product.category || 'Electronics',
+      imageUrl: product.imageUrl || ''
     })
     setEditingId(product.id)
     setShowForm(true)
@@ -128,7 +165,7 @@ export default function ProductManagement() {
   }
 
   const handleCancel = () => {
-    setFormData({ name: '', price: '', stock: '', discount: '', description: '', category: 'Electronics' })
+    setFormData({ name: '', price: '', stock: '', discount: '', description: '', category: 'Gadgets' })
     setEditingId(null)
     setShowForm(false)
     setError('')
@@ -223,12 +260,11 @@ export default function ProductManagement() {
               <div className="form-group">
                 <label>Category</label>
                 <select name="category" value={formData.category} onChange={handleInputChange}>
-                  <option>Electronics</option>
-                  <option>Accessories</option>
-                  <option>Clothing</option>
-                  <option>Home & Garden</option>
-                  <option>Sports</option>
-                  <option>Other</option>
+                  <option>Gadgets</option>
+                  <option>Fashion</option>
+                  <option>Pets</option>
+                  <option>Home</option>
+                  <option>Trending</option>
                 </select>
               </div>
             </div>
@@ -281,6 +317,29 @@ export default function ProductManagement() {
               />
             </div>
 
+            <div className="form-group">
+              <label>Product Image</label>
+              <div className="image-upload-section">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploadingImage}
+                  className="image-input"
+                  id="image-upload"
+                />
+                <label htmlFor="image-upload" className="image-upload-label">
+                  {uploadingImage ? '⏳ Uploading...' : '📸 Click to upload image'}
+                </label>
+                {formData.imageUrl && (
+                  <div className="image-preview">
+                    <img src={formData.imageUrl} alt="Product preview" />
+                    <p className="preview-text">✅ Image uploaded</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="form-buttons">
               <button type="submit" className="save-btn">
                 {editingId ? 'Update Product' : 'Add Product'}
@@ -304,6 +363,7 @@ export default function ProductManagement() {
             <table>
               <thead>
                 <tr>
+                  <th>Image</th>
                   <th>Product Name</th>
                   <th>Category</th>
                   <th>Price</th>
@@ -315,6 +375,13 @@ export default function ProductManagement() {
               <tbody>
                 {products.map(product => (
                   <tr key={product.id}>
+                    <td className="product-image-cell">
+                      {product.imageUrl ? (
+                        <img src={product.imageUrl} alt={product.name} className="product-thumbnail" />
+                      ) : (
+                        <span className="no-image">No image</span>
+                      )}
+                    </td>
                     <td className="product-name">{product.name}</td>
                     <td>{product.category || 'N/A'}</td>
                     <td className="price">৳{product.price}</td>

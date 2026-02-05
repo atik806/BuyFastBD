@@ -1,7 +1,35 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { signOut } from 'firebase/auth'
+import { auth } from '../firebase'
+import SearchBar from '../components/SearchBar'
+import LoginModal from '../components/LoginModal'
 
-export default function HomePage({ products, flashDeals, productsLoading, setCurrentPage }) {
+export default function HomePage({ products, flashDeals, productsLoading, setCurrentPage, user }) {
   const navigate = useNavigate()
+  const [searchResults, setSearchResults] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showLoginModal, setShowLoginModal] = useState(false)
+
+  const handleSearch = (results, query) => {
+    setSearchResults(results)
+    setSearchQuery(query)
+  }
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      setCurrentPage('home')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
+
+  const getUserDisplayName = () => {
+    if (user?.displayName) return user.displayName
+    if (user?.email) return user.email.split('@')[0]
+    return 'User'
+  }
 
   const reviews = [
     { name: 'Fatima Ahmed', rating: 5, text: 'Excellent service! Delivered in 2 days.' },
@@ -20,24 +48,16 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
             <a href="#deals">Deals</a>
             <a href="#reviews">Reviews</a>
             <a href="#contact">Contact</a>
-            <button 
-              className="nav-auth-btn admin-btn"
-              onClick={() => setCurrentPage('admin-login')}
-            >
-              👨‍💼 Admin
-            </button>
-            <button 
-              className="nav-auth-btn user-btn"
-              onClick={() => setCurrentPage('user-signup')}
-            >
-              👤 Sign Up
-            </button>
-            <button 
-              className="nav-auth-btn guest-btn"
-              onClick={() => setCurrentPage('home')}
-            >
-              🛒 Continue as Guest
-            </button>
+            {user ? (
+              <>
+                <div className="user-profile">
+                  <span className="user-name">👤 {getUserDisplayName()}</span>
+                  <button className="nav-auth-btn logout-btn" onClick={handleLogout}>
+                    🚪 Logout
+                  </button>
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
       </nav>
@@ -47,8 +67,24 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
         <div className="hero-content">
           <h1>Welcome to BuyFastBD</h1>
           <p className="hero-tagline">Fast Delivery | Trusted Products | Cash on Delivery</p>
-          <button className="shop-now-btn">🛒 Shop Now</button>
+          <button 
+            className="shop-now-btn"
+            onClick={() => {
+              if (!user) {
+                setShowLoginModal(true)
+              } else {
+                document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })
+              }
+            }}
+          >
+            🛒 Shop Now
+          </button>
         </div>
+      </section>
+
+      {/* Search Bar */}
+      <section className="search-section">
+        <SearchBar products={products} onSearch={handleSearch} />
       </section>
 
       {/* Why BuyFastBD */}
@@ -93,7 +129,17 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
                 {deal.discount && deal.discount > 0 && <div className="discount-badge">{deal.discount}% OFF</div>}
                 <h3>{deal.productName}</h3>
                 <p className="price">৳{deal.price}</p>
-                <button className="add-to-cart" onClick={(e) => { e.stopPropagation() }}>View Details</button>
+                <button 
+                  className="add-to-cart" 
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (!user) {
+                      setShowLoginModal(true)
+                    }
+                  }}
+                >
+                  {user ? 'Add to Cart' : 'Login to Buy'}
+                </button>
               </div>
             ))
           )}
@@ -102,21 +148,33 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
 
       {/* Featured Products */}
       <section className="featured-products" id="products">
-        <h2>Featured Products</h2>
+        <h2>{searchResults ? `Search Results for "${searchQuery}"` : 'Featured Products'}</h2>
         <div className="products-grid">
           {productsLoading ? (
             <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#666' }}>Loading products...</p>
-          ) : products.length === 0 ? (
-            <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#666' }}>No products available yet</p>
+          ) : (searchResults || products).length === 0 ? (
+            <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#666' }}>
+              {searchResults ? 'No products found matching your search' : 'No products available'}
+            </p>
           ) : (
-            products
+            (searchResults || products)
               .filter(product => !flashDeals.some(deal => deal.productId === product.id))
               .map(product => (
                 <div key={product.id} className="product-card" onClick={() => navigate(`/product/${product.id}`)}>
                   <div className="product-image">📦</div>
                   <h3>{product.name}</h3>
                   <p className="price">৳{product.price}</p>
-                  <button className="buy-btn" onClick={(e) => { e.stopPropagation() }}>View Details</button>
+                  <button 
+                    className="buy-btn" 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (!user) {
+                        setShowLoginModal(true)
+                      }
+                    }}
+                  >
+                    {user ? 'Add to Cart' : 'Login to Buy'}
+                  </button>
                 </div>
               ))
           )}
@@ -141,10 +199,22 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
       <section className="trust-section">
         <h2>Why Trust Us?</h2>
         <div className="trust-badges">
-          <div className="badge">✅ 10,000+ Happy Customers</div>
-          <div className="badge">✅ 100% Authentic Products</div>
-          <div className="badge">✅ Secure Payment</div>
-          <div className="badge">✅ 24/7 Customer Support</div>
+          <div className="badge">
+            <div className="badge-icon">👥</div>
+            <div>10,000+ Happy Customers</div>
+          </div>
+          <div className="badge">
+            <div className="badge-icon">✨</div>
+            <div>100% Authentic Products</div>
+          </div>
+          <div className="badge">
+            <div className="badge-icon">🔒</div>
+            <div>Secure Payment</div>
+          </div>
+          <div className="badge">
+            <div className="badge-icon">📞</div>
+            <div>24/7 Customer Support</div>
+          </div>
         </div>
       </section>
 
@@ -175,6 +245,17 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
           <p>&copy; 2026 BuyFastBD. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <LoginModal
+          onClose={() => setShowLoginModal(false)}
+          onSignUp={() => {
+            setShowLoginModal(false)
+            setCurrentPage('user-signup')
+          }}
+        />
+      )}
     </div>
   )
 }

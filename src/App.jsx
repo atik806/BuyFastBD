@@ -122,7 +122,7 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<HomePage products={products} flashDeals={flashDeals} productsLoading={productsLoading} setCurrentPage={setCurrentPage} />} />
+      <Route path="/" element={<HomePage products={products} flashDeals={flashDeals} productsLoading={productsLoading} setCurrentPage={setCurrentPage} user={user} />} />
       <Route path="/product/:productId" element={<ProductDetail />} />
     </Routes>
   )
