@@ -1,15 +1,35 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { signOut } from 'firebase/auth'
 import { auth } from '../firebase'
 import SearchBar from '../components/SearchBar'
 import LoginModal from '../components/LoginModal'
+import logoImg from '../../image/logo.png'
+
+function getCartCount() {
+  try {
+    const saved = localStorage.getItem('userCart')
+    if (!saved) return 0
+    const cart = JSON.parse(saved)
+    return Array.isArray(cart) ? cart.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0
+  } catch {
+    return 0
+  }
+}
 
 export default function HomePage({ products, flashDeals, productsLoading, setCurrentPage, user }) {
   const navigate = useNavigate()
   const [searchResults, setSearchResults] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [cartCount, setCartCount] = useState(0)
+
+  useEffect(() => {
+    setCartCount(getCartCount())
+    const onCartUpdated = () => setCartCount(getCartCount())
+    window.addEventListener('cartUpdated', onCartUpdated)
+    return () => window.removeEventListener('cartUpdated', onCartUpdated)
+  }, [])
 
   const handleSearch = (results, query) => {
     setSearchResults(results)
@@ -23,6 +43,35 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
     } catch (error) {
       console.error('Logout error:', error)
     }
+  }
+
+  const handleAddToCart = (product, e) => {
+    e.stopPropagation()
+    if (!user) {
+      setShowLoginModal(true)
+      return
+    }
+    
+    // Add to cart
+    const savedCart = localStorage.getItem('userCart')
+    let cart = savedCart ? JSON.parse(savedCart) : []
+    
+    const existingItem = cart.find(item => item.id === product.id)
+    if (existingItem) {
+      existingItem.quantity += 1
+    } else {
+      cart.push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        discount: product.discount || 0,
+        quantity: 1
+      })
+    }
+    
+    localStorage.setItem('userCart', JSON.stringify(cart))
+    window.dispatchEvent(new Event('cartUpdated'))
+    alert(`✅ ${product.name} added to cart!`)
   }
 
   const getUserDisplayName = () => {
@@ -42,77 +91,60 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
       {/* Navigation */}
       <nav className="navbar">
         <div className="nav-container">
-          <div className="logo">🛍️ BuyFastBD</div>
+          <div className="logo">
+            <img src={logoImg} alt="BuyFastBD" className="logo-img" />
+          </div>
           <div className="nav-links">
-            <a href="#products">Products</a>
-            <a href="#deals">Deals</a>
-            <a href="#reviews">Reviews</a>
-            <a href="#contact">Contact</a>
             {user ? (
-              <>
-                <div className="user-profile">
-                  <span className="user-name">👤 {getUserDisplayName()}</span>
-                  <button className="nav-auth-btn logout-btn" onClick={handleLogout}>
-                    🚪 Logout
-                  </button>
-                </div>
-              </>
+              <div className="user-profile">
+                <span className="user-name">👤 {getUserDisplayName()}</span>
+                <button className="nav-auth-btn logout-btn" onClick={handleLogout}>
+                  🚪 Logout
+                </button>
+              </div>
             ) : null}
           </div>
         </div>
       </nav>
 
-      {/* Hero Banner */}
-      <section className="hero-banner">
-        <div className="hero-content">
-          <h1>Welcome to BuyFastBD</h1>
-          <p className="hero-tagline">Fast Delivery | Trusted Products | Cash on Delivery</p>
-          <button 
-            className="shop-now-btn"
-            onClick={() => {
-              if (!user) {
-                setShowLoginModal(true)
-              } else {
-                document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })
-              }
-            }}
-          >
-            🛒 Shop Now
-          </button>
-        </div>
-      </section>
-
-      {/* Search Bar */}
+      {/* Search Bar (cart button inside, right of Search when logged in) */}
       <section className="search-section">
-        <SearchBar products={products} onSearch={handleSearch} />
+        <SearchBar
+          products={products}
+          onSearch={handleSearch}
+          showCart={!!user}
+          cartCount={cartCount}
+        />
       </section>
 
-      {/* Why BuyFastBD */}
-      <section className="why-buyfastbd">
-        <h2>Why BuyFastBD?</h2>
-        <div className="benefits-grid">
-          <div className="benefit-card">
-            <span className="benefit-icon">🚚</span>
-            <h3>Fast Delivery All Over Bangladesh</h3>
-            <p>Get your orders delivered quickly to your doorstep</p>
+      {/* Why BuyFastBD - only for guests */}
+      {!user && (
+        <section className="why-buyfastbd">
+          <h2>Why BuyFastBD?</h2>
+          <div className="benefits-grid">
+            <div className="benefit-card">
+              <span className="benefit-icon">🚚</span>
+              <h3>Fast Delivery All Over Bangladesh</h3>
+              <p>Get your orders delivered quickly to your doorstep</p>
+            </div>
+            <div className="benefit-card">
+              <span className="benefit-icon">💯</span>
+              <h3>Quality Checked Products</h3>
+              <p>Every product is verified for quality before shipping</p>
+            </div>
+            <div className="benefit-card">
+              <span className="benefit-icon">💸</span>
+              <h3>Cash on Delivery</h3>
+              <p>Pay when you receive your order - no risk</p>
+            </div>
+            <div className="benefit-card">
+              <span className="benefit-icon">🔁</span>
+              <h3>Easy Return Policy</h3>
+              <p>Hassle-free returns within 7 days</p>
+            </div>
           </div>
-          <div className="benefit-card">
-            <span className="benefit-icon">💯</span>
-            <h3>Quality Checked Products</h3>
-            <p>Every product is verified for quality before shipping</p>
-          </div>
-          <div className="benefit-card">
-            <span className="benefit-icon">💸</span>
-            <h3>Cash on Delivery</h3>
-            <p>Pay when you receive your order - no risk</p>
-          </div>
-          <div className="benefit-card">
-            <span className="benefit-icon">🔁</span>
-            <h3>Easy Return Policy</h3>
-            <p>Hassle-free returns within 7 days</p>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Flash Deals */}
       <section className="flash-deals" id="deals">
@@ -133,8 +165,9 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
                   className="add-to-cart" 
                   onClick={(e) => {
                     e.stopPropagation()
-                    if (!user) {
-                      setShowLoginModal(true)
+                    const product = flashDeals.find(d => d.id === deal.id)
+                    if (product) {
+                      handleAddToCart(product, e)
                     }
                   }}
                 >
@@ -166,12 +199,7 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
                   <p className="price">৳{product.price}</p>
                   <button 
                     className="buy-btn" 
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (!user) {
-                        setShowLoginModal(true)
-                      }
-                    }}
+                    onClick={(e) => handleAddToCart(product, e)}
                   >
                     {user ? 'Add to Cart' : 'Login to Buy'}
                   </button>
@@ -181,42 +209,46 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
         </div>
       </section>
 
-      {/* Customer Reviews */}
-      <section className="customer-reviews" id="reviews">
-        <h2>Customer Reviews ⭐⭐⭐⭐⭐</h2>
-        <div className="reviews-grid">
-          {reviews.map((review, idx) => (
-            <div key={idx} className="review-card">
-              <div className="stars">{'⭐'.repeat(review.rating)}</div>
-              <p className="review-text">"{review.text}"</p>
-              <p className="reviewer-name">- {review.name}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Customer Reviews - only for guests */}
+      {!user && (
+        <section className="customer-reviews" id="reviews">
+          <h2>Customer Reviews ⭐⭐⭐⭐⭐</h2>
+          <div className="reviews-grid">
+            {reviews.map((review, idx) => (
+              <div key={idx} className="review-card">
+                <div className="stars">{'⭐'.repeat(review.rating)}</div>
+                <p className="review-text">"{review.text}"</p>
+                <p className="reviewer-name">- {review.name}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* Trust Badges */}
-      <section className="trust-section">
-        <h2>Why Trust Us?</h2>
-        <div className="trust-badges">
-          <div className="badge">
-            <div className="badge-icon">👥</div>
-            <div>10,000+ Happy Customers</div>
+      {/* Trust Badges - only for guests */}
+      {!user && (
+        <section className="trust-section">
+          <h2>Why Trust Us?</h2>
+          <div className="trust-badges">
+            <div className="badge">
+              <div className="badge-icon">👥</div>
+              <div>10,000+ Happy Customers</div>
+            </div>
+            <div className="badge">
+              <div className="badge-icon">✨</div>
+              <div>100% Authentic Products</div>
+            </div>
+            <div className="badge">
+              <div className="badge-icon">🔒</div>
+              <div>Secure Payment</div>
+            </div>
+            <div className="badge">
+              <div className="badge-icon">📞</div>
+              <div>24/7 Customer Support</div>
+            </div>
           </div>
-          <div className="badge">
-            <div className="badge-icon">✨</div>
-            <div>100% Authentic Products</div>
-          </div>
-          <div className="badge">
-            <div className="badge-icon">🔒</div>
-            <div>Secure Payment</div>
-          </div>
-          <div className="badge">
-            <div className="badge-icon">📞</div>
-            <div>24/7 Customer Support</div>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="footer">
@@ -228,9 +260,9 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
           <div className="footer-section">
             <h4>Quick Links</h4>
             <ul>
-              <li><a href="#about">About Us</a></li>
-              <li><a href="#contact">Contact</a></li>
-              <li><a href="#faq">FAQ</a></li>
+              <li><button onClick={() => navigate('/about')} className="footer-link-btn">About Us</button></li>
+              <li><button onClick={() => navigate('/contact')} className="footer-link-btn">Contact</button></li>
+              <li><button onClick={() => navigate('/faq')} className="footer-link-btn">FAQ</button></li>
             </ul>
           </div>
           <div className="footer-section">
@@ -239,6 +271,19 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
               <a href="#facebook">📘 Facebook</a>
               <a href="#instagram">📷 Instagram</a>
             </div>
+          </div>
+          <div className="footer-section">
+            <h4>Admin</h4>
+            <ul>
+              <li>
+                <button 
+                  className="admin-login-btn"
+                  onClick={() => setCurrentPage('admin-login')}
+                >
+                  👨‍💼 Admin Login
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
         <div className="footer-bottom">
@@ -252,7 +297,7 @@ export default function HomePage({ products, flashDeals, productsLoading, setCur
           onClose={() => setShowLoginModal(false)}
           onSignUp={() => {
             setShowLoginModal(false)
-            setCurrentPage('user-signup')
+            navigate('/signup')
           }}
         />
       )}

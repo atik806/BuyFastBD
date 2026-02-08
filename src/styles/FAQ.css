@@ -1,0 +1,268 @@
+.faq {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.faq-header {
+  background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+  color: white;
+  padding: 40px 20px;
+  text-align: center;
+  position: relative;
+}
+
+.back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid white;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: white;
+  color: #9c27b0;
+}
+
+.faq-header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
+}
+
+.faq-header .tagline {
+  font-size: 1.1rem;
+  margin: 0;
+  opacity: 0.95;
+}
+
+.faq-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.category-filter {
+  background: white;
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.category-filter h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.category-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.category-btn {
+  background: #f0f0f0;
+  border: 2px solid #ddd;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.category-btn:hover {
+  border-color: #9c27b0;
+  color: #9c27b0;
+}
+
+.category-btn.active {
+  background: #9c27b0;
+  color: white;
+  border-color: #9c27b0;
+}
+
+.faq-items {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+.faq-item {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.faq-item:last-child {
+  border-bottom: none;
+}
+
+.faq-question {
+  width: 100%;
+  padding: 20px;
+  background: white;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.faq-question:hover {
+  background: #f9f9f9;
+}
+
+.question-text {
+  flex: 1;
+}
+
+.toggle-icon {
+  display: inline-block;
+  transition: transform 0.3s ease;
+  margin-left: 10px;
+  color: #9c27b0;
+}
+
+.toggle-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.faq-answer {
+  padding: 0 20px 20px 20px;
+  background: #f9f9f9;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.faq-answer p {
+  margin: 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+.faq-contact {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.faq-contact h2 {
+  color: #9c27b0;
+  margin: 0 0 10px 0;
+}
+
+.faq-contact p {
+  color: #666;
+  margin: 0 0 20px 0;
+}
+
+.contact-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.contact-btn {
+  background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.contact-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(156, 39, 176, 0.3);
+}
+
+.faq-nav {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.faq-nav h3 {
+  color: #9c27b0;
+  margin: 0 0 15px 0;
+}
+
+.nav-links {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  background: #f0f0f0;
+  border: 2px solid #ddd;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+  background: #9c27b0;
+  color: white;
+  border-color: #9c27b0;
+}
+
+@media (max-width: 768px) {
+  .faq-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .faq-question {
+    padding: 15px;
+  }
+
+  .faq-answer {
+    padding: 0 15px 15px 15px;
+  }
+
+  .category-buttons {
+    gap: 8px;
+  }
+
+  .category-btn {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .back-btn {
+    position: static;
+    margin-bottom: 20px;
+  }
+}

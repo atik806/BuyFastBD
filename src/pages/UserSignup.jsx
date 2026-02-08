@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import { auth, db } from '../firebase'
 import { setDoc, doc } from 'firebase/firestore'
 import '../styles/Auth.css'
 
 export default function UserSignup({ onSignupSuccess, onSkip }) {
+  const navigate = useNavigate()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -32,11 +34,17 @@ export default function UserSignup({ onSignupSuccess, onSkip }) {
       localStorage.setItem('userId', user.uid)
 
       onSignupSuccess(user, 'user')
+      navigate('/', { replace: true })
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSkip = () => {
+    onSkip()
+    navigate('/', { replace: true })
   }
 
   return (
@@ -62,7 +70,7 @@ export default function UserSignup({ onSignupSuccess, onSkip }) {
         <div className="divider">OR</div>
 
         <button 
-          onClick={onSkip}
+          onClick={handleSkip}
           className="skip-btn"
         >
           Continue as Guest

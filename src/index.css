@@ -119,6 +119,13 @@ body {
   animation: slideInLeft 0.6s ease-out;
 }
 
+.logo-img {
+  height: 40px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
 .nav-links {
   display: flex;
   gap: 30px;
@@ -151,6 +158,61 @@ body {
 .nav-links a:hover {
   opacity: 0.8;
   transform: translateY(-2px);
+}
+
+.nav-links button.nav-cart-link {
+  background: none;
+  border: none;
+  font: inherit;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-links button.nav-cart-link::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: white;
+  transition: width 0.3s ease;
+}
+
+.nav-links button.nav-cart-link:hover::after {
+  width: 100%;
+}
+
+.nav-links button.nav-cart-link:hover {
+  opacity: 0.8;
+  transform: translateY(-2px);
+}
+
+.nav-cart-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cart-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: #ff6b35;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 10px;
 }
 
 .nav-auth-btn {
@@ -818,6 +880,23 @@ body {
   display: inline-block;
 }
 
+.footer-link-btn {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: inherit;
+  padding: 0;
+  font-weight: 500;
+}
+
+.footer-link-btn:hover {
+  color: #ff6b35;
+  transform: translateX(5px);
+}
+
 .social-links {
   display: flex;
   gap: 15px;
@@ -939,7 +1018,21 @@ body {
   display: block;
 }
 
-.badge-icon:nth-child(1) { }
-.badge-icon:nth-child(2) { }
-.badge-icon:nth-child(3) { }
-.badge-icon:nth-child(4) { }
+
+/* Admin Login Button in Footer */
+.admin-login-btn {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.admin-login-btn:hover {
+  color: #ff6b35;
+  transform: translateX(5px);
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { db, auth } from '../firebase'
 import { onAuthStateChanged } from 'firebase/auth'
@@ -16,6 +16,7 @@ export default function ProductDetail() {
   const [cart, setCart] = useState([])
   const [user, setUser] = useState(null)
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [addToCartToast, setAddToCartToast] = useState(false)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -82,14 +83,17 @@ export default function ProductDetail() {
         id: product.id,
         name: product.name,
         price: product.price,
-        discount: product.discount,
-        quantity: quantity
+        discount: product.discount || 0,
+        quantity: quantity,
+        imageUrl: product.imageUrl || (product.images && product.images[0]) || ''
       }]
     }
 
     saveCart(updatedCart)
-    alert(`✅ Added ${quantity} item(s) to cart!`)
+    window.dispatchEvent(new CustomEvent('cartUpdated'))
+    setAddToCartToast(true)
     setQuantity(1)
+    setTimeout(() => setAddToCartToast(false), 2500)
   }
 
   const handleBuyNow = () => {
@@ -98,6 +102,9 @@ export default function ProductDetail() {
       return
     }
     handleAddToCart()
+    setTimeout(() => {
+      navigate('/cart')
+    }, 500)
   }
 
   if (loading) {
@@ -116,10 +123,16 @@ export default function ProductDetail() {
     ? product.price - discountedPrice
     : 0
 
-  // Generate multiple product images
-  const productImages = product.imageUrl 
-    ? [product.imageUrl, product.imageUrl, product.imageUrl, product.imageUrl, product.imageUrl]
-    : ['📦', '📦', '📦', '📦', '📦']
+  // High-quality images: support 3–5 images (product.images array or single imageUrl)
+  const productImages = (() => {
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      return product.images.slice(0, 5).map(url => url || '📦')
+    }
+    if (product.imageUrl) {
+      return Array(5).fill(product.imageUrl)
+    }
+    return ['📦', '📦', '📦', '📦', '📦']
+  })()
 
   // Real customer reviews with varied ratings
   const reviews = [
@@ -135,16 +148,28 @@ export default function ProductDetail() {
 
   return (
     <div className="product-detail">
-      {/* Back Button */}
-      <button className="back-btn" onClick={() => navigate('/')}>
-        ← Back to Products
-      </button>
+      {/* Back + Cart */}
+      <div className="product-detail-header">
+        <button className="back-btn" onClick={() => navigate('/')}>
+          ← Back to Products
+        </button>
+        {user && (
+          <button
+            type="button"
+            className="product-detail-cart-btn"
+            onClick={() => window.dispatchEvent(new CustomEvent('openCartSidebar'))}
+            aria-label="Open cart"
+          >
+            🛒 Cart
+          </button>
+        )}
+      </div>
 
       <div className="product-container">
         {/* Image Gallery */}
         <div className="image-section">
           <div className="main-image">
-            {product.imageUrl ? (
+            {typeof productImages[selectedImage] === 'string' && productImages[selectedImage].startsWith('http') ? (
               <img src={productImages[selectedImage]} alt={product.name} className="main-product-image" />
             ) : (
               <div className="image-placeholder">{productImages[selectedImage]}</div>
@@ -158,7 +183,7 @@ export default function ProductDetail() {
                 onClick={() => setSelectedImage(idx)}
                 title={`Image ${idx + 1}`}
               >
-                {product.imageUrl ? (
+                {typeof img === 'string' && img.startsWith('http') ? (
                   <img src={img} alt={`${product.name} ${idx + 1}`} />
                 ) : (
                   img
@@ -220,13 +245,18 @@ export default function ProductDetail() {
             </div>
           </div>
 
+          {/* COD Availability Badge */}
+          <div className="cod-badge-section">
+            <span className="cod-badge">💵 Cash on Delivery Available</span>
+          </div>
+
           {/* Delivery Info */}
           <div className="delivery-section">
             <div className="delivery-item">
               <span className="delivery-icon">🚚</span>
               <div>
                 <p className="delivery-label">Delivery Time</p>
-                <p className="delivery-value">2-3 days</p>
+                <p className="delivery-value">{product.deliveryDays || '2–3 days'}</p>
               </div>
             </div>
             <div className="delivery-item">
@@ -272,6 +302,11 @@ export default function ProductDetail() {
               💳 Buy Now
             </button>
           </div>
+          {addToCartToast && (
+            <div className="add-to-cart-toast" role="status">
+              ✅ Added to cart! <Link to="/cart">View cart</Link>
+            </div>
+          )}
 
           {/* Trust Badges */}
           <div className="trust-badges">
@@ -317,7 +352,7 @@ export default function ProductDetail() {
           onClose={() => setShowLoginModal(false)}
           onSignUp={() => {
             setShowLoginModal(false)
-            navigate('/user-signup')
+            navigate('/signup')
           }}
         />
       )}

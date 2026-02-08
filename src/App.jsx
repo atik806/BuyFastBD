@@ -9,6 +9,12 @@ import UserSignup from './pages/UserSignup'
 import Dashboard from './pages/Dashboard'
 import ProductDetail from './pages/ProductDetail'
 import HomePage from './pages/HomePage'
+import Cart from './pages/Cart'
+import Checkout from './pages/Checkout'
+import AboutUs from './pages/AboutUs'
+import Contact from './pages/Contact'
+import FAQ from './pages/FAQ'
+import CartSidebar from './components/CartSidebar'
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home')
@@ -82,9 +88,7 @@ export default function App() {
     return <Dashboard user={user} role="admin" onLogout={() => setUser(null)} />
   }
 
-  if (user && userRole === 'user') {
-    return <Dashboard user={user} role="user" onLogout={() => setUser(null)} />
-  }
+  // Logged-in users (role 'user') stay in Routes so they can browse products, view product detail, and buy
 
   if (currentPage === 'admin-login') {
     return (
@@ -121,9 +125,18 @@ export default function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<HomePage products={products} flashDeals={flashDeals} productsLoading={productsLoading} setCurrentPage={setCurrentPage} user={user} />} />
-      <Route path="/product/:productId" element={<ProductDetail />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<HomePage products={products} flashDeals={flashDeals} productsLoading={productsLoading} setCurrentPage={setCurrentPage} user={user} />} />
+        <Route path="/product/:productId" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/signup" element={<UserSignup onSignupSuccess={(u, role) => { setUser(u); setUserRole(role); }} onSkip={() => {}} />} />
+      </Routes>
+      <CartSidebar />
+    </>
   )
 }

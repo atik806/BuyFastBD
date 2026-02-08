@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import '../styles/SearchBar.css'
 
-export default function SearchBar({ products, onSearch }) {
+export default function SearchBar({ products, onSearch, showCart = false, cartCount = 0 }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -44,6 +44,11 @@ export default function SearchBar({ products, onSearch }) {
   }
 
   const currentCategory = categories.find(cat => cat.id === selectedCategory)
+
+  const handleOpenCart = (e) => {
+    e.preventDefault()
+    window.dispatchEvent(new CustomEvent('openCartSidebar'))
+  }
 
   return (
     <form className="search-bar-container" onSubmit={handleSearch}>
@@ -89,6 +94,17 @@ export default function SearchBar({ products, onSearch }) {
       <button type="submit" className="search-button">
         🔍 Search
       </button>
+
+      {showCart && (
+        <button
+          type="button"
+          className="search-bar-cart-btn"
+          onClick={handleOpenCart}
+          aria-label="Open cart"
+        >
+          🛒 Cart{cartCount > 0 && <span className="search-bar-cart-count">{cartCount}</span>}
+        </button>
+      )}
     </form>
   )
 }

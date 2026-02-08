@@ -16,6 +16,20 @@
 .header-left h1 {
   font-size: 2rem;
   margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-dashboard-logo-wrap {
+  margin: 0;
+}
+
+.admin-dashboard-logo {
+  height: 36px;
+  width: auto;
+  display: block;
+  object-fit: contain;
 }
 
 .header-left p {

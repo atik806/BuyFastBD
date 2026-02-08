@@ -125,11 +125,45 @@
   cursor: pointer;
   font-size: 16px;
   transition: all 0.3s ease;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0;
 }
 
-.search-button:hover {
-  background: #5568d3;
+.search-bar-cart-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  background: #ff6b35;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border-radius: 0 8px 8px 0;
+  white-space: nowrap;
+}
+
+.search-bar-cart-btn:hover {
+  filter: brightness(1.1);
+}
+
+.search-bar-cart-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* When cart is present, search button has rounded corner only on inner side */
+.search-bar-container:has(.search-bar-cart-btn) .search-button {
+  border-radius: 0;
 }
 
 @media (max-width: 768px) {
@@ -184,6 +218,12 @@
 
   .search-button {
     width: 100%;
+    border-radius: 0;
+  }
+
+  .search-bar-cart-btn {
+    width: 100%;
+    justify-content: center;
     border-radius: 0 0 8px 8px;
   }
 }

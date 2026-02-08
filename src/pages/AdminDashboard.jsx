@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
+import logoImg from '../../image/logo.png'
 import { signOut } from 'firebase/auth'
 import { auth, db } from '../firebase'
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'
 import ProductManagement from './ProductManagement'
+import OrdersManagement from './OrdersManagement'
+import Analytics from './Analytics'
 import '../styles/AdminDashboard.css'
 
 export default function AdminDashboard({ user, onLogout }) {
@@ -82,7 +85,7 @@ export default function AdminDashboard({ user, onLogout }) {
       {/* Header */}
       <div className="admin-header">
         <div className="header-left">
-          <h1>🛍️ BuyFastBD Admin Panel</h1>
+          <h1 className="admin-dashboard-logo-wrap"><img src={logoImg} alt="BuyFastBD" className="admin-dashboard-logo" /> Admin Panel</h1>
           <p>Welcome, {user.email}</p>
         </div>
         <button onClick={handleLogout} className="logout-btn">
@@ -228,98 +231,12 @@ export default function AdminDashboard({ user, onLogout }) {
 
         {/* Orders Tab */}
         {activeTab === 'orders' && (
-          <div className="tab-content">
-            <h2>Order Management</h2>
-            {orders.length === 0 ? (
-              <div className="no-data">
-                <p>No orders yet</p>
-              </div>
-            ) : (
-              <div className="orders-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Order ID</th>
-                      <th>Customer</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                      <th>Date</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map(order => (
-                      <tr key={order.id}>
-                        <td className="order-id-cell">{order.id}</td>
-                        <td>{order.customerName || 'Guest'}</td>
-                        <td>৳{order.amount || 0}</td>
-                        <td>
-                          <select 
-                            value={order.status || 'Pending'}
-                            onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
-                            className={`status-select ${(order.status || 'pending').toLowerCase()}`}
-                          >
-                            <option>Pending</option>
-                            <option>Processing</option>
-                            <option>Shipped</option>
-                            <option>Delivered</option>
-                            <option>Cancelled</option>
-                          </select>
-                        </td>
-                        <td>{order.createdAt ? new Date(order.createdAt.toDate()).toLocaleDateString() : 'N/A'}</td>
-                        <td>
-                          <button className="view-btn">👁️ View</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+          <OrdersManagement />
         )}
 
         {/* Analytics Tab */}
         {activeTab === 'analytics' && (
-          <div className="tab-content">
-            <h2>Analytics & Reports</h2>
-            <div className="analytics-grid">
-              <div className="analytics-card">
-                <h3>Top Selling Products</h3>
-                <div className="analytics-list">
-                  {products.length === 0 ? (
-                    <p className="no-data-text">No products yet</p>
-                  ) : (
-                    products.slice(0, 5).map(product => (
-                      <div key={product.id} className="analytics-item">
-                        <span>{product.name}</span>
-                        <span className="sales-count">{product.sales || 0} sales</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-              <div className="analytics-card">
-                <h3>Order Status Distribution</h3>
-                <div className="analytics-list">
-                  {['Pending', 'Processing', 'Shipped', 'Delivered'].map(status => (
-                    <div key={status} className="analytics-item">
-                      <span>{status}</span>
-                      <span className="count">{orders.filter(o => (o.status || 'Pending') === status).length}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="analytics-card">
-                <h3>Revenue Summary</h3>
-                <div className="revenue-summary">
-                  <p>Total Revenue: <strong>৳{totalRevenue.toLocaleString()}</strong></p>
-                  <p>Average Order: <strong>৳{totalOrdersCount > 0 ? Math.round(totalRevenue / totalOrdersCount).toLocaleString() : '0'}</strong></p>
-                  <p>Total Orders: <strong>{totalOrdersCount}</strong></p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <Analytics />
         )}
       </div>
     </div>

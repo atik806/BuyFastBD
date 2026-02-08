@@ -19,7 +19,10 @@ export default function ProductManagement() {
     discount: '',
     description: '',
     category: 'Gadgets',
-    imageUrl: ''
+    imageUrl: '',
+    videoUrl: '',
+    deliveryDays: '2–3 days',
+    images: [] // optional: array of image URLs for 3–5 images
   })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -63,6 +66,11 @@ export default function ProductManagement() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
+    if (name === 'imagesText') {
+      const urls = value.split('\n').map(s => s.trim()).filter(Boolean)
+      setFormData(prev => ({ ...prev, images: urls }))
+      return
+    }
     setFormData(prev => ({
       ...prev,
       [name]: name === 'price' || name === 'stock' || name === 'discount' ? parseInt(value) || '' : value
@@ -131,7 +139,7 @@ export default function ProductManagement() {
       }
 
       // Reset form (real-time listener will update automatically)
-      setFormData({ name: '', price: '', stock: '', discount: '', description: '', category: 'Gadgets', imageUrl: '' })
+      setFormData({ name: '', price: '', stock: '', discount: '', description: '', category: 'Gadgets', imageUrl: '', videoUrl: '', deliveryDays: '2–3 days', images: [] })
       setEditingId(null)
       setShowForm(false)
     } catch (err) {
@@ -147,7 +155,10 @@ export default function ProductManagement() {
       discount: product.discount || '',
       description: product.description || '',
       category: product.category || 'Electronics',
-      imageUrl: product.imageUrl || ''
+      imageUrl: product.imageUrl || '',
+      videoUrl: product.videoUrl || '',
+      deliveryDays: product.deliveryDays || '2–3 days',
+      images: product.images && Array.isArray(product.images) ? product.images : []
     })
     setEditingId(product.id)
     setShowForm(true)
@@ -165,7 +176,7 @@ export default function ProductManagement() {
   }
 
   const handleCancel = () => {
-    setFormData({ name: '', price: '', stock: '', discount: '', description: '', category: 'Gadgets' })
+    setFormData({ name: '', price: '', stock: '', discount: '', description: '', category: 'Gadgets', imageUrl: '', videoUrl: '', deliveryDays: '2–3 days', images: [] })
     setEditingId(null)
     setShowForm(false)
     setError('')
@@ -340,6 +351,39 @@ export default function ProductManagement() {
               </div>
             </div>
 
+            <div className="form-group">
+              <label>Video URL (optional, recommended for conversion)</label>
+              <input
+                type="url"
+                name="videoUrl"
+                value={formData.videoUrl}
+                onChange={handleInputChange}
+                placeholder="https://example.com/product-video.mp4"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Delivery Time (e.g. 2–3 days)</label>
+              <input
+                type="text"
+                name="deliveryDays"
+                value={formData.deliveryDays}
+                onChange={handleInputChange}
+                placeholder="2–3 days"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Extra image URLs (optional, one per line – for 3–5 product images)</label>
+              <textarea
+                name="imagesText"
+                value={(formData.images || []).join('\n')}
+                onChange={handleInputChange}
+                placeholder="https://example.com/img1.jpg&#10;https://example.com/img2.jpg"
+                rows={3}
+              />
+            </div>
+
             <div className="form-buttons">
               <button type="submit" className="save-btn">
                 {editingId ? 'Update Product' : 'Add Product'}
@@ -393,19 +437,34 @@ export default function ProductManagement() {
                     <td>{product.discount ? `${product.discount}%` : '-'}</td>
                     <td className="actions">
                       <button
+                        type="button"
                         className="edit-btn"
                         onClick={() => handleEdit(product)}
                       >
                         ✏️ Edit
                       </button>
+                      {flashDeals.some(deal => deal.productId === product.id) ? (
+                        <button
+                          type="button"
+                          className="remove-deal-btn"
+                          onClick={() => {
+                            const dealId = flashDeals.find(deal => deal.productId === product.id)?.id
+                            if (dealId) handleRemoveFromBestDeals(dealId)
+                          }}
+                        >
+                          ⬇️ Remove from Deal
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="deal-btn"
+                          onClick={() => handleAddToBestDeals(product)}
+                        >
+                          ⚡ Add to Deal
+                        </button>
+                      )}
                       <button
-                        className="deal-btn"
-                        onClick={() => handleAddToBestDeals(product)}
-                        disabled={flashDeals.some(deal => deal.productId === product.id)}
-                      >
-                        ⚡ Flash Deal
-                      </button>
-                      <button
+                        type="button"
                         className="delete-btn"
                         onClick={() => handleDelete(product.id)}
                       >

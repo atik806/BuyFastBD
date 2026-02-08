@@ -4,6 +4,7 @@ import { auth, db } from '../firebase'
 import { collection, onSnapshot, query, orderBy, addDoc } from 'firebase/firestore'
 import { useNavigate } from 'react-router-dom'
 import SearchBar from '../components/SearchBar'
+import logoImg from '../../image/logo.png'
 import '../styles/UserDashboard.css'
 
 export default function UserDashboard({ user, onLogout }) {
@@ -159,7 +160,10 @@ export default function UserDashboard({ user, onLogout }) {
       {/* Header */}
       <header className="user-dashboard-header">
         <div className="header-left">
-          <h1>🛍️ BuyFastBD</h1>
+          <h1 className="user-dashboard-logo-wrap"><img src={logoImg} alt="BuyFastBD" className="user-dashboard-logo" /></h1>
+          <button type="button" className="shop-home-btn" onClick={() => navigate('/')}>
+            🏠 Shop from Home
+          </button>
         </div>
         <div className="header-center">
           <SearchBar products={products} onSearch={handleSearch} />
@@ -206,7 +210,7 @@ export default function UserDashboard({ user, onLogout }) {
                 <p>No deals available</p>
               ) : (
                 flashDeals.map(deal => (
-                  <div key={deal.id} className="deal-card">
+                  <div key={deal.id} className="deal-card" onClick={() => navigate(`/product/${deal.productId}`)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && navigate(`/product/${deal.productId}`)}>
                     <div className="product-image">📦</div>
                     {deal.discount && deal.discount > 0 && (
                       <div className="discount-badge">{deal.discount}% OFF</div>
@@ -215,7 +219,8 @@ export default function UserDashboard({ user, onLogout }) {
                     <p className="price">৳{deal.price}</p>
                     <button
                       className="add-to-cart-btn"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation()
                         const product = products.find(p => p.id === deal.productId)
                         if (product) handleAddToCart(product)
                       }}
@@ -243,7 +248,7 @@ export default function UserDashboard({ user, onLogout }) {
                 (searchResults || products)
                   .filter(product => !flashDeals.some(deal => deal.productId === product.id))
                   .map(product => (
-                    <div key={product.id} className="product-card">
+                    <div key={product.id} className="product-card" onClick={() => navigate(`/product/${product.id}`)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && navigate(`/product/${product.id}`)}>
                       <div className="product-image">📦</div>
                       <h3>{product.name}</h3>
                       <p className="category-tag">{product.category}</p>
@@ -251,12 +256,15 @@ export default function UserDashboard({ user, onLogout }) {
                       {product.stock > 0 ? (
                         <button
                           className="add-to-cart-btn"
-                          onClick={() => handleAddToCart(product)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleAddToCart(product)
+                          }}
                         >
                           Add to Cart
                         </button>
                       ) : (
-                        <button className="out-of-stock-btn" disabled>
+                        <button className="out-of-stock-btn" disabled onClick={(e) => e.stopPropagation()}>
                           Out of Stock
                         </button>
                       )}
