@@ -24,14 +24,25 @@
   - Sticky buy button for easy checkout
 - 🔐 **Guest Checkout** - No signup required
 - 👤 **Google Sign-In** - One-click user registration
-- 💳 **Multiple Payment Options** - Cash on Delivery support
+- 💳 **Flexible Delivery Options**:
+  - Inside Dhaka: ৳80
+  - Outside Dhaka: ৳120
+  - Real-time total calculation
+- � **ROrder Tracking** - View order history and status
+- � **PDF Rec eipts** - Download professional order receipts
 - 🔄 **Easy Returns** - 7-day return policy
 
-### 👨‍💼 Admin Features
-- 📊 **Real-Time Dashboard** - Live analytics and metrics
+### 👨‍� Aydmin Features
+- � **UReal-Time Dashboard** - Live analytics and metrics
 - 📦 **Product Management** - Add, edit, delete products instantly
 - ⚡ **Flash Deals** - Create and manage featured deals
-- 📋 **Order Management** - Track and update order status
+- 📋 **Advanced Order Management**:
+  - Search by Order ID, Customer Name, Email, Phone
+  - Filter by Status (Pending, Accepted, Cancelled)
+  - Filter by Date (Today, Last 7 Days, Last 30 Days)
+  - Sort by Date or Amount
+  - Accept/Cancel/Delete orders
+  - Download PDF receipts
 - 📈 **Analytics & Reports** - Sales insights and trends
 - 👥 **User Management** - View and manage customers
 
@@ -41,6 +52,7 @@
 - 🌈 **Beautiful UI** - Gradient backgrounds and intuitive layouts
 - ⚡ **Real-Time Updates** - Firestore listeners for instant data sync
 - 🎯 **Conversion Optimized** - Product pages designed to convert
+- 📄 **Professional PDF Receipts** - Modern, single-page order receipts
 
 ---
 
@@ -61,6 +73,10 @@ cd buyfastbd
 # Install dependencies
 npm install
 
+# Setup Firebase (see Firebase Setup section)
+cp src/firebase.example.js src/firebase.js
+# Edit src/firebase.js with your credentials
+
 # Start development server
 npm run dev
 ```
@@ -73,10 +89,16 @@ The app will be available at `http://localhost:5173`
 
 ### Firebase Setup
 
-1. Create a Firebase project at [firebase.google.com](https://firebase.google.com)
-2. Get your Firebase config
-3. Update `src/firebase.js` with your credentials:
+**IMPORTANT: For security, firebase.js is NOT committed to Git**
 
+1. Copy the template file:
+```bash
+cp src/firebase.example.js src/firebase.js
+```
+
+2. Get your Firebase config from [firebase.google.com](https://firebase.google.com)
+
+3. Update `src/firebase.js` with your credentials:
 ```javascript
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
@@ -84,13 +106,16 @@ const firebaseConfig = {
   projectId: "YOUR_PROJECT_ID",
   storageBucket: "YOUR_STORAGE_BUCKET",
   messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  appId: "YOUR_APP_ID",
+  measurementId: "YOUR_MEASUREMENT_ID"
 };
 ```
 
+See [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) for detailed instructions.
+
 ### Firestore Security Rules
 
-See `FIREBASE_RULES.md` for complete security rules setup.
+See [FIREBASE_RULES.md](./FIREBASE_RULES.md) for complete security rules setup.
 
 ---
 
@@ -100,27 +125,44 @@ See `FIREBASE_RULES.md` for complete security rules setup.
 buyfastbd/
 ├── src/
 │   ├── pages/
-│   │   ├── HomePage.jsx           # Homepage with products
-│   │   ├── ProductDetail.jsx      # Product detail page
-│   │   ├── AdminDashboard.jsx     # Admin dashboard
-│   │   ├── ProductManagement.jsx  # Product CRUD
-│   │   ├── AdminLogin.jsx         # Admin login
-│   │   ├── AdminSetup.jsx         # Admin setup
-│   │   ├── UserSignup.jsx         # User signup
-│   │   └── Dashboard.jsx          # User dashboard
+│   │   ├── HomePage.jsx              # Homepage with products
+│   │   ├── ProductDetail.jsx         # Product detail page
+│   │   ├── Cart.jsx                  # Shopping cart
+│   │   ├── Checkout.jsx              # Checkout with delivery options
+│   │   ├── AdminDashboard.jsx        # Admin dashboard
+│   │   ├── ProductManagement.jsx     # Product CRUD
+│   │   ├── OrdersManagement.jsx      # Order management with filters
+│   │   ├── AdminLogin.jsx            # Admin login
+│   │   ├── AdminSetup.jsx            # Admin setup
+│   │   ├── UserSignup.jsx            # User signup
+│   │   ├── UserDashboard.jsx         # User dashboard
+│   │   ├── Analytics.jsx             # Analytics dashboard
+│   │   ├── AboutUs.jsx               # About page
+│   │   ├── Contact.jsx               # Contact page
+│   │   └── FAQ.jsx                   # FAQ page
+│   ├── components/
+│   │   ├── LoginModal.jsx            # Login modal
+│   │   └── CategoryFilter.jsx        # Category filter
 │   ├── styles/
-│   │   ├── index.css              # Global styles
-│   │   ├── ProductDetail.css      # Product page styles
-│   │   ├── AdminDashboard.css     # Admin styles
-│   │   ├── Auth.css               # Auth pages styles
+│   │   ├── index.css                 # Global styles
+│   │   ├── ProductDetail.css         # Product page styles
+│   │   ├── OrdersManagement.css      # Orders page styles
+│   │   ├── Checkout.css              # Checkout styles
+│   │   ├── Cart.css                  # Cart styles
 │   │   └── ...
-│   ├── App.jsx                    # Main app with routing
-│   ├── firebase.js                # Firebase config
-│   └── main.jsx                   # React entry point
-├── index.html                     # HTML entry
-├── vite.config.js                 # Vite config
-├── package.json                   # Dependencies
-└── README.md                      # This file
+│   ├── utils/
+│   │   └── generatePDF.js            # PDF receipt generator
+│   ├── App.jsx                       # Main app with routing
+│   ├── firebase.js                   # Firebase config (NOT in Git)
+│   ├── firebase.example.js           # Firebase template
+│   └── main.jsx                      # React entry point
+├── index.html                        # HTML entry
+├── vite.config.js                    # Vite config
+├── package.json                      # Dependencies
+├── .gitignore                        # Git ignore rules
+├── FIREBASE_SETUP.md                 # Firebase setup guide
+├── FIREBASE_RULES.md                 # Firestore security rules
+└── README.md                         # This file
 ```
 
 ---
@@ -143,12 +185,47 @@ buyfastbd/
 - Add to cart functionality
 - Sticky buy button
 
+### 🛒 Shopping Cart
+- View all items
+- Adjust quantities
+- Remove items
+- Real-time total calculation
+- Proceed to checkout
+
+### 💳 Checkout Page
+- Delivery address form
+- Delivery location selection (Inside/Outside Dhaka)
+- Real-time delivery cost calculation
+- Order review
+- Payment method selection
+- Order confirmation
+
 ### 👨‍💼 Admin Dashboard
 - **Overview Tab** - Key metrics and recent orders
 - **Products Tab** - Full product management
 - **Flash Deals Tab** - Manage featured deals
-- **Orders Tab** - Order tracking and status updates
+- **Orders Tab** - Advanced order management with:
+  - Real-time search
+  - Multi-filter system
+  - Sort options
+  - PDF receipt download
+  - Order status management
 - **Analytics Tab** - Sales reports and insights
+
+### 📋 Order Management
+- **Search**: Order ID, Customer Name, Email, Phone
+- **Filters**:
+  - Status: All, Pending, Accepted, Cancelled
+  - Date: All Time, Today, Last 7 Days, Last 30 Days
+  - Sort: Newest, Oldest, Highest Amount, Lowest Amount
+- **Actions**: Accept, Cancel, Download PDF, Delete
+- **PDF Receipts**: Professional single-page receipts with:
+  - Order details
+  - Customer information
+  - Order items
+  - Delivery cost breakdown
+  - Payment method
+  - Estimated delivery date
 
 ---
 
@@ -204,11 +281,21 @@ buyfastbd/
 **orders**
 ```javascript
 {
-  customerName: string,
-  amount: number,
-  status: string,
+  userId: string,
+  userName: string,
+  userEmail: string,
+  phone: string,
   items: array,
-  createdAt: timestamp
+  subtotal: number,
+  discount: number,
+  deliveryCost: number,
+  deliveryLocation: string,  // "inside" or "outside"
+  total: number,
+  status: string,            // "pending", "accepted", "cancelled"
+  paymentMethod: string,
+  deliveryAddress: string,
+  createdAt: timestamp,
+  estimatedDelivery: timestamp
 }
 ```
 
@@ -246,8 +333,26 @@ npm run preview
 - ✅ Products update instantly across all pages
 - ✅ Flash deals sync in real-time
 - ✅ Admin dashboard shows live metrics
+- ✅ Orders update in real-time
 - ✅ Cart persists across sessions
 - ✅ No manual refresh needed
+
+---
+
+## 📄 PDF Receipt Features
+
+- **Modern Design** - Professional, customer-friendly layout
+- **Single Page** - All information fits on one A4 page
+- **Complete Details**:
+  - Order ID and date
+  - Customer information
+  - Order items with quantities
+  - Delivery cost breakdown
+  - Total amount
+  - Payment method
+  - Estimated delivery date
+- **Easy Download** - One-click PDF generation
+- **Print Ready** - Optimized for printing
 
 ---
 
@@ -257,7 +362,9 @@ npm run preview
 - Primary: `#ff6b35` (Orange)
 - Secondary: `#f7931e` (Light Orange)
 - Background: `#f8f9fa` (Light Gray)
-- Text: `#333` (Dark Gray)
+- Text: `#000` (Black)
+- Success: `#4caf50` (Green)
+- Error: `#f44336` (Red)
 
 ### Animations
 - Fade In - Smooth opacity transitions
@@ -301,12 +408,14 @@ npm run build
 
 ### Firebase Import Error
 ```bash
-npm install firebase
+# Make sure firebase.js exists
+cp src/firebase.example.js src/firebase.js
+# Then add your credentials
 ```
 
-### React Router Not Found
+### Missing Dependencies
 ```bash
-npm install react-router-dom
+npm install
 ```
 
 ### Port Already in Use
@@ -314,14 +423,20 @@ npm install react-router-dom
 npm run dev -- --port 3000
 ```
 
+### PDF Generation Issues
+```bash
+npm install jspdf html2canvas
+```
+
 ---
 
 ## 📚 Documentation
 
-- [Firebase Setup Guide](./FIREBASE_SETUP_QUICK.md)
+- [Firebase Setup Guide](./FIREBASE_SETUP.md)
 - [Firebase Security Rules](./FIREBASE_RULES.md)
 - [Product Pages Guide](./PRODUCT_PAGES.md)
 - [Setup Instructions](./SETUP.md)
+- [Purchase Flow Guide](./PURCHASE_FLOW_README.md)
 
 ---
 
@@ -356,6 +471,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - React team for the amazing framework
 - Firebase for real-time database
 - Vite for blazing fast builds
+- jsPDF & html2canvas for PDF generation
 - All contributors and users
 
 ---
@@ -373,4 +489,3 @@ For support, email support@buyfastbd.com or open an issue on GitHub.
 ⭐ If you like this project, please give it a star!
 
 </div>
-
