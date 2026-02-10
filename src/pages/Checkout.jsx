@@ -19,6 +19,7 @@ export default function Checkout() {
     address: '',
     city: '',
     postalCode: '',
+    deliveryLocation: 'inside',
     paymentMethod: 'cod'
   })
   const [orderPlaced, setOrderPlaced] = useState(false)
@@ -53,9 +54,10 @@ export default function Checkout() {
           : item.price
         return total + (discountedPrice * item.quantity)
       }, 0)
-      setTotal(Math.round(cartTotal))
+      const deliveryCost = formData.deliveryLocation === 'inside' ? 80 : 120
+      setTotal(Math.round(cartTotal + deliveryCost))
     }
-  }, [])
+  }, [formData.deliveryLocation])
 
   const getItemLineTotal = (item) => {
     const discountedPrice = item.discount
@@ -106,17 +108,24 @@ export default function Checkout() {
     setSubmitting(true)
 
     try {
+      const deliveryCost = formData.deliveryLocation === 'inside' ? 80 : 120
+      const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0)
+      const discount = cart.reduce((total, item) => {
+        const disc = item.discount ? (item.price * item.discount / 100) * item.quantity : 0
+        return total + disc
+      }, 0)
+      const totalWithDelivery = Math.round(subtotal - discount + deliveryCost)
+
       const order = {
         userId: user.uid,
         userEmail: user.email,
         userName: formData.fullName,
         items: cart,
-        subtotal: cart.reduce((total, item) => total + (item.price * item.quantity), 0),
-        discount: cart.reduce((total, item) => {
-          const discount = item.discount ? (item.price * item.discount / 100) * item.quantity : 0
-          return total + discount
-        }, 0),
-        total: total,
+        subtotal: subtotal,
+        discount: discount,
+        deliveryCost: deliveryCost,
+        deliveryLocation: formData.deliveryLocation,
+        total: totalWithDelivery,
         status: 'pending',
         paymentMethod: formData.paymentMethod,
         deliveryAddress: `${formData.address}, ${formData.city}, ${formData.postalCode}`,
@@ -285,6 +294,18 @@ export default function Checkout() {
                   />
                 </div>
               </div>
+              <div className="form-group">
+                <label>Delivery Location *</label>
+                <select
+                  name="deliveryLocation"
+                  value={formData.deliveryLocation}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="inside">Inside Dhaka (৳80)</option>
+                  <option value="outside">Outside Dhaka (৳120)</option>
+                </select>
+              </div>
             </div>
 
             {/* Payment Method */}
@@ -366,7 +387,7 @@ export default function Checkout() {
               )}
               <div className="total-row">
                 <span>Delivery:</span>
-                <span className="free">Free</span>
+                <span>৳{formData.deliveryLocation === 'inside' ? 80 : 120}</span>
               </div>
               <div className="total-row final">
                 <span>Total:</span>

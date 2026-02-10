@@ -20,6 +20,78 @@
   margin: 0;
 }
 
+/* Filters Section */
+.filters-section {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.search-input,
+.filter-select {
+  padding: 12px 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.search-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.search-input {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.filter-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  align-items: flex-end;
+}
+
+.clear-filters-btn {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.clear-filters-btn:hover {
+  background: linear-gradient(135deg, #ff8555 0%, #ff9970 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.clear-filters-btn:active {
+  transform: translateY(0);
+}
+
 /* No Orders */
 .no-orders {
   background: white;
@@ -32,7 +104,7 @@
 .no-orders p {
   color: #999;
   font-size: 1.1rem;
-  margin: 0;
+  margin: 0 0 20px 0;
 }
 
 /* Table Wrapper */
@@ -252,6 +324,10 @@
   .orders-table {
     min-width: 900px;
   }
+
+  .filter-controls {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
@@ -261,6 +337,14 @@
 
   .orders-header h2 {
     font-size: 1.5rem;
+  }
+
+  .filters-section {
+    padding: 15px;
+  }
+
+  .filter-controls {
+    grid-template-columns: 1fr;
   }
 
   .orders-table {
@@ -279,7 +363,8 @@
 
   .btn-accept,
   .btn-cancel,
-  .btn-download {
+  .btn-download,
+  .btn-delete {
     width: 100%;
     padding: 6px 8px;
     font-size: 0.75rem;

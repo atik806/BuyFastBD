@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react'
 import { db } from '../firebase'
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, deleteDoc } from 'firebase/firestore'
+import { generateOrderPDFDownload } from '../utils/generatePDF'
 import '../styles/OrdersManagement.css'
 
 export default function OrdersManagement() {
   const [orders, setOrders] = useState([])
+  const [filteredOrders, setFilteredOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [dateFilter, setDateFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('newest')
 
   useEffect(() => {
     setLoading(true)
@@ -62,59 +68,82 @@ export default function OrdersManagement() {
   }
 
   const handleDownloadPDF = (order) => {
-    const pdfContent = `
-ORDER RECEIPT
-═══════════════════════════════════════════════════════════════
+    generateOrderPDFDownload(order)
+  }
 
-Order ID: ${order.id}
-Date: ${order.createdAt ? new Date(order.createdAt.toDate()).toLocaleString() : 'N/A'}
-Status: ${order.status || 'Pending'}
+  // Filter and search logic
+  useEffect(() => {
+    let result = [...orders]
 
-CUSTOMER INFORMATION
-───────────────────────────────────────────────────────────────
-Name: ${order.userName}
-Email: ${order.userEmail}
-Phone: ${order.phone}
-Address: ${order.deliveryAddress}
+    // Search filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase()
+      result = result.filter(order =>
+        order.id.toLowerCase().includes(term) ||
+        order.userName.toLowerCase().includes(term) ||
+        order.userEmail.toLowerCase().includes(term) ||
+        order.phone.includes(term)
+      )
+    }
 
-ORDER ITEMS
-───────────────────────────────────────────────────────────────
-${order.items?.map((item, idx) => `
-${idx + 1}. ${item.name}
-   Quantity: ${item.quantity}
-   Price: ৳${item.price}
-   Subtotal: ৳${item.price * item.quantity}
-`).join('')}
+    // Status filter
+    if (statusFilter !== 'all') {
+      result = result.filter(order => (order.status || 'pending').toLowerCase() === statusFilter)
+    }
 
-ORDER SUMMARY
-───────────────────────────────────────────────────────────────
-Subtotal: ৳${order.subtotal || 0}
-Discount: -৳${order.discount || 0}
-Delivery: Free
-───────────────────────────────────────────────────────────────
-TOTAL: ৳${order.total || 0}
+    // Date filter
+    if (dateFilter !== 'all') {
+      const now = new Date()
+      const orderDate = new Date()
+      
+      switch (dateFilter) {
+        case 'today':
+          orderDate.setHours(0, 0, 0, 0)
+          result = result.filter(order => {
+            const date = new Date(order.createdAt.toDate())
+            date.setHours(0, 0, 0, 0)
+            return date.getTime() === orderDate.getTime()
+          })
+          break
+        case 'week':
+          orderDate.setDate(now.getDate() - 7)
+          result = result.filter(order => new Date(order.createdAt.toDate()) >= orderDate)
+          break
+        case 'month':
+          orderDate.setMonth(now.getMonth() - 1)
+          result = result.filter(order => new Date(order.createdAt.toDate()) >= orderDate)
+          break
+        default:
+          break
+      }
+    }
 
-PAYMENT METHOD
-───────────────────────────────────────────────────────────────
-${order.paymentMethod === 'cod' ? 'Cash on Delivery' : order.paymentMethod}
+    // Sorting
+    switch (sortBy) {
+      case 'newest':
+        result.sort((a, b) => new Date(b.createdAt.toDate()) - new Date(a.createdAt.toDate()))
+        break
+      case 'oldest':
+        result.sort((a, b) => new Date(a.createdAt.toDate()) - new Date(b.createdAt.toDate()))
+        break
+      case 'highest':
+        result.sort((a, b) => b.total - a.total)
+        break
+      case 'lowest':
+        result.sort((a, b) => a.total - b.total)
+        break
+      default:
+        break
+    }
 
-ESTIMATED DELIVERY
-───────────────────────────────────────────────────────────────
-${order.estimatedDelivery ? new Date(order.estimatedDelivery.toDate()).toLocaleDateString() : '2-3 days'}
+    setFilteredOrders(result)
+  }, [orders, searchTerm, statusFilter, dateFilter, sortBy])
 
-═══════════════════════════════════════════════════════════════
-Thank you for your order!
-BuyFastBD - Your trusted online shopping destination
-═══════════════════════════════════════════════════════════════
-    `
-
-    const element = document.createElement('a')
-    const file = new Blob([pdfContent], { type: 'text/plain' })
-    element.href = URL.createObjectURL(file)
-    element.download = `Order_${order.id}.txt`
-    document.body.appendChild(element)
-    element.click()
-    document.body.removeChild(element)
+  const clearFilters = () => {
+    setSearchTerm('')
+    setStatusFilter('all')
+    setDateFilter('all')
+    setSortBy('newest')
   }
 
   if (loading) {
@@ -125,12 +154,66 @@ BuyFastBD - Your trusted online shopping destination
     <div className="orders-management">
       <div className="orders-header">
         <h2>📋 Orders Management</h2>
-        <p className="orders-count">Total Orders: {orders.length}</p>
+        <p className="orders-count">Total Orders: {orders.length} | Showing: {filteredOrders.length}</p>
       </div>
 
-      {orders.length === 0 ? (
+      {/* Filters Section */}
+      <div className="filters-section">
+        <div className="filter-group">
+          <input
+            type="text"
+            placeholder="🔍 Search by Order ID, Name, Email, or Phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
+
+        <div className="filter-controls">
+          <div className="filter-group">
+            <label>Status:</label>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="accepted">Accepted</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>Date:</label>
+            <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="filter-select">
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">Last 7 Days</option>
+              <option value="month">Last 30 Days</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>Sort By:</label>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="filter-select">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="highest">Highest Amount</option>
+              <option value="lowest">Lowest Amount</option>
+            </select>
+          </div>
+
+          <button className="clear-filters-btn" onClick={clearFilters}>
+            ✕ Clear Filters
+          </button>
+        </div>
+      </div>
+
+      {filteredOrders.length === 0 ? (
         <div className="no-orders">
-          <p>No orders yet</p>
+          <p>{searchTerm || statusFilter !== 'all' || dateFilter !== 'all' ? '❌ No orders match your filters' : '📭 No orders yet'}</p>
+          {(searchTerm || statusFilter !== 'all' || dateFilter !== 'all') && (
+            <button className="clear-filters-btn" onClick={clearFilters}>
+              Clear Filters
+            </button>
+          )}
         </div>
       ) : (
         <div className="orders-table-wrapper">
@@ -148,7 +231,7 @@ BuyFastBD - Your trusted online shopping destination
               </tr>
             </thead>
             <tbody>
-              {orders.map(order => (
+              {filteredOrders.map(order => (
                 <tr key={order.id} className={`order-row status-${(order.status || 'pending').toLowerCase()}`}>
                   <td className="order-id">{order.id.substring(0, 12)}...</td>
                   <td>{order.userName}</td>
